@@ -16,7 +16,7 @@ int main(void){
     cout << "Inicio" <<endl;
     bool mostrar, endFlag = false, startFlag = true;
     float speed = 0, aceleration = 0;
-    const float height = 0.12; //metros
+    const float height = 0.14; //metros
     while(true){
         // cout << "valor:" << fotoResistenciaInicial.read() << endl;
         if(fotoResistenciaInicial.read() < 0.3f && startFlag){
@@ -38,7 +38,7 @@ int main(void){
         if (mostrar) {
             float time= duration_cast<milliseconds>(timer.elapsed_time()).count();
             time /= 1000;
-            printf("The time taken was %llu .seconds\n", time);
+            printf("El recorrido tomó %llu .segundos\n", time);
             aceleration = 2*height/(time*time);
             cout << "Aceleration: " << aceleration << endl;
             lcd.cls();
