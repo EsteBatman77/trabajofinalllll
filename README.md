@@ -1,72 +1,46 @@
-![](./resources/official_armmbed_example_badge.png)
-# Blinky Mbed OS example
+# Acceleration Measurement System
 
-The example project is part of the [Arm Mbed OS Official Examples](https://os.mbed.com/code/) and is the [getting started example for Mbed OS](https://os.mbed.com/docs/mbed-os/latest/quick-start/index.html). It contains an application that repeatedly blinks an LED on supported [Mbed boards](https://os.mbed.com/platforms/).
+Este proyecto implementa un sistema de medición de aceleración utilizando la plataforma mbed y varios componentes periféricos. El código está escrito en C++ y utiliza la biblioteca mbed para facilitar el desarrollo en placas compatibles.
 
-You can build the project with all supported [Mbed OS build tools](https://os.mbed.com/docs/mbed-os/latest/tools/index.html). However, this example project specifically refers to the command-line interface tool [Arm Mbed CLI](https://github.com/ARMmbed/mbed-cli#installing-mbed-cli).
-(Note: To see a rendered example you can import into the Arm Online Compiler, please see our [import quick start](https://os.mbed.com/docs/mbed-os/latest/quick-start/online-with-the-online-compiler.html#importing-the-code).)
+## Descripción General
 
-## Mbed OS build tools
+El sistema utiliza dos fotoresistencias (sensores de luz) conectadas a pines analógicos para medir cambios en la intensidad luminosa. La primera fotoresistencia, `fotoResistenciaInicial`, inicia la medición cuando su lectura cae por debajo de un umbral predefinido. La segunda fotoresistencia, `fotoResistenciaFinal`, detiene la medición cuando su lectura cae por debajo del mismo umbral.
 
-### Mbed CLI 2
-Starting with version 6.5, Mbed OS uses Mbed CLI 2. It uses Ninja as a build system, and CMake to generate the build environment and manage the build process in a compiler-independent manner. If you are working with Mbed OS version prior to 6.5 then check the section [Mbed CLI 1](#mbed-cli-1).
-1. [Install Mbed CLI 2](https://os.mbed.com/docs/mbed-os/latest/build-tools/install-or-upgrade.html).
-1. From the command-line, import the example: `mbed-tools import mbed-os-example-blinky`
-1. Change the current directory to where the project was imported.
+Cuando se activa la medición, se inicia un temporizador (`timer`) para calcular el tiempo transcurrido entre las dos mediciones. Utilizando la altura predefinida (`height`), el sistema calcula la aceleración en función del tiempo y muestra el resultado en una pantalla LCD de 16x2 caracteres.
 
-### Mbed CLI 1
-1. [Install Mbed CLI 1](https://os.mbed.com/docs/mbed-os/latest/quick-start/offline-with-mbed-cli.html).
-1. From the command-line, import the example: `mbed import mbed-os-example-blinky`
-1. Change the current directory to where the project was imported.
+## Componentes Utilizados
 
-## Application functionality
+- **Placa mbed**: La plataforma mbed es la base del sistema y proporciona la interfaz para interactuar con los periféricos.
 
-The `main()` function is the single thread in the application. It toggles the state of a digital output connected to an LED on the board.
+- **TextLCD**: Se utiliza para mostrar información en una pantalla LCD de 16x2 caracteres.
 
-**Note**: This example requires a target with RTOS support, i.e. one with `rtos` declared in `supported_application_profiles` in `targets/targets.json` in [mbed-os](https://github.com/ARMmbed/mbed-os). For non-RTOS targets (usually with small memory sizes), please use [mbed-os-example-blinky-baremetal](https://github.com/ARMmbed/mbed-os-example-blinky-baremetal) instead.
+- **UnbufferedSerial**: Configurado para la comunicación serial para la salida de información y depuración.
 
-## Building and running
+- **AnalogIn**: Se utilizan dos pines analógicos para leer las fotoresistencias.
 
-1. Connect a USB cable between the USB port on the board and the host computer.
-1. Run the following command to build the example project and program the microcontroller flash memory:
+- **DigitalOut**: Controla un LED para indicar el estado del sistema.
 
-    * Mbed CLI 2
+- **Timer**: Mide el tiempo transcurrido entre las dos mediciones de fotoresistencia.
 
-    ```bash
-    $ mbed-tools compile -m <TARGET> -t <TOOLCHAIN> --flash
-    ```
+## Funcionamiento
 
-    * Mbed CLI 1
+1. El sistema comienza con el LED encendido y muestra un mensaje de inicio por medio de la comunicación serial.
 
-    ```bash
-    $ mbed compile -m <TARGET> -t <TOOLCHAIN> --flash
-    ```
+2. Cuando la lectura de `fotoResistenciaInicial` cae por debajo de `0.3f`, se inicia la medición. El LED se apaga, y el temporizador se reinicia y comienza a contar el tiempo.
 
-Your PC may take a few minutes to compile your code.
+3. La medición se detiene cuando la lectura de `fotoResistenciaFinal` cae por debajo de `0.3f`. El LED se enciende nuevamente, y se muestra en la pantalla LCD el tiempo transcurrido y la aceleración calculada.
 
-The binary is located at:
-* **Mbed CLI 2** - `./cmake_build/mbed-os-example-blinky.bin`</br>
-* **Mbed CLI 1** - `./BUILD/<TARGET>/<TOOLCHAIN>/mbed-os-example-blinky.bin`
+4. El sistema espera a que se vuelva a cumplir la condición de inicio para realizar una nueva medición.
 
-Alternatively, you can manually copy the binary to the board, which you mount on the host computer over USB.
+## Variables Importantes
 
-## Expected output
-The LED on your target turns on and off every 500 milliseconds.
+- `startFlag` y `endFlag`: Banderas que controlan el inicio y fin de la medición.
+- `timer`: Temporizador utilizado para medir el tiempo transcurrido.
+- `mostrar`: Indica que información calculada que se debe mostrar en la pantalla LCD
 
+## Observaciones
 
-## Troubleshooting
-If you have problems, you can review the [documentation](https://os.mbed.com/docs/latest/tutorials/debugging.html) for suggestions on what could be wrong and how to fix it.
+- Ajuste los umbrales según las características de sus fotoresistencias y las condiciones ambientales.
+- El sistema asume una relación lineal entre la intensidad luminosa y el tiempo de caída.
 
-## Related Links
-
-* [Mbed OS Stats API](https://os.mbed.com/docs/latest/apis/mbed-statistics.html).
-* [Mbed OS Configuration](https://os.mbed.com/docs/latest/reference/configuration.html).
-* [Mbed OS Serial Communication](https://os.mbed.com/docs/latest/tutorials/serial-communication.html).
-* [Mbed OS bare metal](https://os.mbed.com/docs/mbed-os/latest/reference/mbed-os-bare-metal.html).
-* [Mbed boards](https://os.mbed.com/platforms/).
-
-### License and contributions
-
-The software is provided under Apache-2.0 license. Contributions to this project are accepted under the same license. Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for more info.
-
-This project contains code from other projects. The original license text is included in those source files. They must comply with our license guide.
+Este proyecto es parte de un enfoque académico para comprender la interacción entre hardware y software en sistemas embebidos y puede ser ampliado para incluir más funcionalidades y adaptarse a aplicaciones específicas.
